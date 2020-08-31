@@ -3,6 +3,8 @@
 #include <ESP8266WebServer.h>
 #include <FS.h>
 
+#include <string.h>
+
 ESP8266WiFiMulti wifiMulti;
 ESP8266WebServer server(80);
 
@@ -10,6 +12,8 @@ IPAddress local_IP(192, 168, 31, 116);
 IPAddress gateway(192, 168, 31, 0);
 IPAddress subnet(255, 255, 255, 0);
 
+// 中断允许标志位
+#define interruptPin D3
 /*
   串口通信约定格式:
     ^Order#parameter$
@@ -17,6 +21,8 @@ IPAddress subnet(255, 255, 255, 0);
 
 void setup() {
   // put your setup code here, to run once:
+  pinMode(interruptPin, OUTPUT);
+
   Serial.begin(9600);
 
   wifiMulti.addAP("Xiaomi_782C", "wanghai1015");    // add wifi
@@ -44,7 +50,7 @@ void setup() {
 
   // web server program run start
   server.onNotFound(handleUserRequest);
-  server.on("/led_control", ledControl);
+  server.on("/info", allInfoJson);
   server.begin();
   
 
@@ -97,12 +103,50 @@ String getContentType(String filename) {
   return "text/plain";
 }
 
-void ledControl() {
-  String order = "^led#$";
-  String ledPwm = server.arg("ledPwm");  // /led_control?ledPwm=???
-  int p = ledPwm.toInt();
-  // Type Change
 
-  Serial.print(order);
-  server.sendHeader();
+void allInfoJson() {
+
+  // D3 set HIGH
+  digitalWrite(interruptPin, HIGH);
+
+  // send command
+  String command = "^led#get$";
+  Serial.println(command);
+
+
+  char comData[43] = "", order[21], param[21];
+  char temp, *flag = NULL;
+  String jsonData = "{ ";
+
+  // read LED Status
+  while (Serial.available() > 0) {
+    temp = Serial.read();
+    // start read
+    if (temp == '^') {
+      comData[0] = temp;
+      
+      delay(2);
+      for (int i=1; Serial.available() > 0 && i <= 42; i++) {
+        comData[i] = Serial.read();
+        
+        if (comData[i] == '$') {
+          comData[i + 1] = '\0';
+          break;
+        }
+        
+        if (comData[i] == '#') {
+          comData[i] = '\0';
+          flag = &comData[i+1];
+        } 
+        delay(2);
+      }
+      // Save one
+      strcpy(order, &comData[1]);
+      strcpy(param, flag);
+      jsonData += "\"" + String(order) + "\": \"" + String(param) + "\", ";
+    }
+  }
+  jsonData += " }";
+  
+  server.send(200, "application/json", jsonData);
 }
