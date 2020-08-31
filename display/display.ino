@@ -38,6 +38,9 @@ void setRevNum(int addr, int digit, char num)
 }
 
 void setup() {
+  pinMode(2, OUTPUT);
+  
+  
   Serial.begin(9600);
   // while(!Serial)
   //   continue;
@@ -57,7 +60,8 @@ void setup() {
 //    ledConnectionTest();
 //  }
 
-  attachInterrupt(2, interruptRequest, HIGH);   // 2 引脚设置为通信中断标志
+  attachInterrupt(2, interruptRequest, CHANGE);   // 2 引脚设置为通信中断标志
+
 }
 
 // char frame[40] = {}; //用于存储AIDA64从串口发来的信息
@@ -130,6 +134,7 @@ void ledConnectionTest()
 }
 
 void interruptRequest() {
+
   char comData[43] = "";
   char param[20] = "";
   char order[20] = "";
@@ -161,6 +166,7 @@ void interruptRequest() {
     }
     strcpy(order, &comData[1]);
     strcpy(param, flag);
+//    Serial.println(order);
     runFunction(order, param);
   }
   
@@ -178,8 +184,15 @@ void runFunction(String order, String param) {
 
   } else if (order == "dht") {
     
-    Serial.print("^temperature#");  Serial.print(temperature);  Serial.println("#");
-    Serial.print("^humidity#");     Serial.print(humidity);     Serial.println("#");
+    Serial.print("^temperature#");  Serial.print(temperature);  Serial.println("$");
+    Serial.print("^humidity#");     Serial.print(humidity);     Serial.println("$");
+
+  } else if (order == "all") {
+    
+    bool ledStatus = digitalRead(led);
+    Serial.print("^led#");          Serial.print(ledStatus);    Serial.println("$");
+    Serial.print("^temperature#");  Serial.print(temperature);  Serial.println("$");
+    Serial.print("^humidity#");     Serial.print(humidity);     Serial.println("$");
 
   } else {
     
@@ -192,4 +205,5 @@ void loop() {
     refreshled();
     delay(500);
   }
+  interruptRequest();
 }
