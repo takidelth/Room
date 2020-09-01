@@ -110,7 +110,7 @@ void allInfoJson() {
   digitalWrite(interruptPin, HIGH);
 
   // send command
-  String command = "^led#get$";
+  String command = "^all#$";
   Serial.println(command);
 
 
@@ -130,7 +130,7 @@ void allInfoJson() {
         comData[i] = Serial.read();
         
         if (comData[i] == '$') {
-          comData[i + 1] = '\0';
+          comData[i] = '\0';
           break;
         }
         
