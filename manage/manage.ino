@@ -126,7 +126,6 @@ void allInfoJson() {
     if (temp == '^') {
       comData[0] = temp;
       
-      delay(2);
       for (int i=1; Serial.available() > 0 && i <= 42; i++) {
         comData[i] = Serial.read();
         
@@ -139,15 +138,16 @@ void allInfoJson() {
           comData[i] = '\0';
           flag = &comData[i+1];
         } 
-        delay(2);
+
       }
       // Save one
       strcpy(order, &comData[1]);
       strcpy(param, flag);
-      jsonData += "\"" + String(order) + "\": \"" + String(param) + "\", ";
+      jsonData += "\"" + String(order) + "\": \"" + String(param) + "\",";
     }
   }
-  jsonData += " }";
+  jsonData += "}";
   
+  jsonData[jsonData.length() - 2] = ' ';
   server.send(200, "application/json", jsonData);
 }

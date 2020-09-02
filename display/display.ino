@@ -138,38 +138,40 @@ void interruptRequest() {
   char comData[43] = "";
   char param[20] = "";
   char order[20] = "";
+  char temp, *flag;
 
   // Save data
-  if (Serial.available() > 0) {
-    char temp = Serial.read();
+  while (Serial.available()) {
+      
+    temp = Serial.read();
+    // start for '^'
     if (temp == '^') {
-      comData[0] = temp;
-      delay(2);
-      for (int i=1; Serial.available() > 0; i++) {
+      // data save to comData
+      for (int i=1; Serial.available() > 0 && i <= 42; i++) {
+        
         comData[i] = Serial.read();
-        delay(2);
+
+        if (comData[i] == '#') {
+          comData[i] = '\0';
+          flag = &comData[i+1];
+        }
+
+        if (comData[i] == '$') {
+          comData[i] = '\0';
+          break;
+        }
+
       }
+
+      // run command
+      strcpy(order, &comData[1]);
+      strcpy(param, flag);
+      runFunction(order, param);
+    
     }
-  }
   
-  if (comData[0] != 0) {
-    char * flag, *p = comData;
-    while (*p != '\0') {
-      if (*p == '#') {
-          flag = p+1;
-          *p = '\0';
-      }
-      if (*p == '$') {
-       *p = '\0' ;
-      }
-      p++;
-    }
-    strcpy(order, &comData[1]);
-    strcpy(param, flag);
-//    Serial.println(order);
-    runFunction(order, param);
   }
-  
+    
 }
 
 void runFunction(String order, String param) {
