@@ -44,7 +44,7 @@ void setup() {
   Serial.begin(9600);
   // while(!Serial)
   //   continue;
-  Serial.println("Serial Port Ready");
+//  Serial.println("Serial Port Ready");
   int devices=lc.getDeviceCount();
   for(int address=0;address<devices;address++) {
     /*The MAX72XX is in power-saving mode on startup*/
@@ -205,7 +205,6 @@ void runFunction(String order, String param) {
 void loop() {
   if (dht11.read(&temperature, &humidity, NULL) != 0){
     refreshled();
-    delay(500);
   }
   interruptRequest();
 }
