@@ -119,7 +119,7 @@ void allInfoJson() {
   String jsonData = "{ ";
 
   // read LED Status
-  delay(20);
+  delay(100);
   while (Serial.available() > 0) {
     temp = Serial.read();
     // start read
@@ -144,12 +144,6 @@ void allInfoJson() {
       strcpy(order, &comData[1]);
       strcpy(param, flag);
       jsonData += "\"" + String(order) + "\": \"" + String(param) + "\",";
-    } else if (temp == '!') {
-
-    while (Serial.available() > 0) {
-        continue;
-      }
-      
     }
     
   }

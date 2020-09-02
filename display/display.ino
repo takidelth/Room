@@ -2,18 +2,22 @@
 #define DIN 11
 #define CS  10
 #define CLK 13
+
 //使用ESP8266的连线方式
 // #define DIN 13 //D7
 // #define CS  15 //D8
 // #define CLK 14 //D5
 
+#define DHTpin 9
+#define led 3
+
+
 #define uchar unsigned char
 #include <LedControl.h>
 #include <SimpleDHT.h>
 
-int DHTpin = 9;
+
 SimpleDHT11 dht11(DHTpin);    // 初始化DHT引脚
-int led = 3;
 
 LedControl lc=LedControl(DIN,CLK,CS,4); //4个MAX7219数码管模块级联
 unsigned long delaytime=500;
@@ -38,7 +42,7 @@ void setRevNum(int addr, int digit, char num)
 }
 
 void setup() {
-  pinMode(2, OUTPUT);
+  pinMode(led, OUTPUT);
   
   
   Serial.begin(9600);
@@ -60,7 +64,7 @@ void setup() {
 //    ledConnectionTest();
 //  }
 
-  attachInterrupt(2, interruptRequest, CHANGE);   // 2 引脚设置为通信中断标志
+//  attachInterrupt(2, interruptRequest, CHANGE);   // 2 引脚设置为通信中断标志
 
 }
 
@@ -141,7 +145,8 @@ void interruptRequest() {
   char temp, *flag;
 
   // Save data
-  while (Serial.available()) {
+  delay(30);
+  while (Serial.available() > 0) {
       
     temp = Serial.read();
     // start for '^'
@@ -179,7 +184,7 @@ void runFunction(String order, String param) {
 
     if (param == "get") {
       bool ledStatus = digitalRead(led);
-      Serial.print("^#"); Serial.print(ledStatus); Serial.println("$");
+      Serial.print("^#"); Serial.print(ledStatus); Serial.println("$!");
     } else {
       digitalWrite(led, ! digitalRead(led));
     }
@@ -187,18 +192,18 @@ void runFunction(String order, String param) {
   } else if (order == "dht") {
     
     Serial.print("^temperature#");  Serial.print(temperature);  Serial.println("$");
-    Serial.print("^humidity#");     Serial.print(humidity);     Serial.println("$");
+    Serial.print("^humidity#");     Serial.print(humidity);     Serial.println("$!");
 
   } else if (order == "all") {
     
     bool ledStatus = digitalRead(led);
     Serial.print("^led#");          Serial.print(ledStatus);    Serial.println("$");
     Serial.print("^temperature#");  Serial.print(temperature);  Serial.println("$");
-    Serial.print("^humidity#");     Serial.print(humidity);     Serial.println("$");
+    Serial.print("^humidity#");     Serial.print(humidity);     Serial.println("$!");
 
   } else {
     
-    Serial.println("^ERR#$");  
+    Serial.print("^ERR#"); Serial.print(order); Serial.println("$!");  
   
   }
 }
