@@ -64,7 +64,7 @@ void loop() {
 // page not found callback this function
 void handleUserRequest() {
   String reqResource = server.uri();  // get user requests Resource name
-  Serial.print("reqResource:"); Serial.println(reqResource);
+  // Serial.print("reqResource:"); Serial.println(reqResource);
 
   if (! handleFileRead(reqResource)) {
     server.send(404, "text/plain", "404 Not Found!!");
@@ -119,6 +119,7 @@ void allInfoJson() {
   String jsonData = "{ ";
 
   // read LED Status
+  delay(20);
   while (Serial.available() > 0) {
     temp = Serial.read();
     // start read
