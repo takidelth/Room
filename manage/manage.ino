@@ -144,7 +144,14 @@ void allInfoJson() {
       strcpy(order, &comData[1]);
       strcpy(param, flag);
       jsonData += "\"" + String(order) + "\": \"" + String(param) + "\",";
+    } else if (temp == '!') {
+
+    while (Serial.available() > 0) {
+        continue;
+      }
+      
     }
+    
   }
   jsonData += "}";
   
