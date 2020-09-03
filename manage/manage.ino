@@ -23,7 +23,7 @@ IPAddress subnet(255, 255, 255, 0);
 // page not found callback this function
 void handleUserRequest() {
   String reqResource = server.uri();  // get user requests Resource name
-  // Serial.print("reqResource:"); Serial.println(reqResource);
+//   Serial.print("reqResource:"); Serial.println(reqResource);
 
   if (! handleFileRead(reqResource)) {
     server.send(404, "text/plain", "404 Not Found!!");
@@ -84,7 +84,7 @@ String returnDataToJsonString() {
   String jsonData = "{ ";
 
   // read LED Status
-  delay(100);
+  delay(50);
   while (Serial.available() > 0) {
     temp = Serial.read();
     // start read
