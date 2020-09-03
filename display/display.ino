@@ -3,21 +3,23 @@
 #define CS  10
 #define CLK 13
 
-//使用ESP8266的连线方式
-// #define DIN 13 //D7
-// #define CS  15 //D8
-// #define CLK 14 //D5
 
-#define DHTpin 9
-#define led 3
+#define DHTpin 9    // DHT 温湿度传感器信号引脚
+#define relay 3       // 继电器
 
 
 #define uchar unsigned char
 #include <LedControl.h>
 #include <SimpleDHT.h>
+//#include <TaskScheduler.h>
 
+//Scheduler Sch;
+// 保存 温度&湿度  数据
+byte temperature = 0;
+byte humidity = 0;
 
 SimpleDHT11 dht11(DHTpin);    // 初始化DHT引脚
+
 
 LedControl lc=LedControl(DIN,CLK,CS,4); //4个MAX7219数码管模块级联
 unsigned long delaytime=500;
@@ -34,50 +36,18 @@ uchar N_rev = 0x3E;
 uchar Cel_rev = 0xF8; //摄氏度符号
 
 void setRevNum(int addr, int digit, char num)
-{ //用于反向显示数字(第几个数码管模块, 第几位, 显示什么数字)
+{
+   //用于反向显示数字(第几个数码管模块, 第几位, 显示什么数字)
   if(num!=' ')
     lc.setRow(addr, digit, led_rev[num-48]);
   else
     lc.setRow(addr, digit, 0x00);
 }
 
-void setup() {
-  pinMode(led, OUTPUT);
-  
-  
-  Serial.begin(9600);
-  // while(!Serial)
-  //   continue;
-//  Serial.println("Serial Port Ready");
-  int devices=lc.getDeviceCount();
-  for(int address=0;address<devices;address++) {
-    /*The MAX72XX is in power-saving mode on startup*/
-    lc.shutdown(address,false);
-    /* 数码管亮度调至最低，防止功率过高开发板过热，亮度过高会有安全隐患 */
-    /* 注意：实测亮度调至15，数码管全亮时，滤波电容温度会高于100度 */
-    lc.setIntensity(address,1);
-    /* and clear the display */
-    lc.clearDisplay(address);
-  }
-//  while(Serial.available()==0)
-//  {
-//    ledConnectionTest();
-//  }
-
-//  attachInterrupt(2, interruptRequest, CHANGE);   // 2 引脚设置为通信中断标志
-
-}
-
-// char frame[40] = {}; //用于存储AIDA64从串口发来的信息
-// byte inByte;
-// int temperature,humidity
-// char temp[3];
-
-byte temperature = 0;
-byte humidity = 0;
 
 void refreshled()
 {
+  
   char a0,a1,a2,a3,b0,b1,b2,b3;
   a3 = temperature/1000+48;
   a2 = (temperature%1000)/100+48;
@@ -126,20 +96,21 @@ void refreshled()
    
 }
 
-void ledConnectionTest()
-{
-  for(int i = 0; i < 4; i++){
-    for(int j = 7; j >= 0; j--){
-      lc.setRow(i, j, 0x01);
-      delay(50);
-      lc.setRow(i, j, 0x00);
-    }  
-  }
-}
+// void ledConnectionTest()
+// {
+//   for(int i = 0; i < 4; i++){
+//     for(int j = 7; j >= 0; j--){
+//       lc.setRow(i, j, 0x01);
+//       delay(50);
+//       lc.setRow(i, j, 0x00);
+//     }  
+//   }
+// }
+
 
 void interruptRequest() {
 
-  char comData[43] = "";
+  char comData[43] = "";    // 保存串口数据
   char param[20] = "";
   char order[20] = "";
   char temp, *flag;
@@ -179,15 +150,19 @@ void interruptRequest() {
     
 }
 
-void runFunction(String order, String param) {
-  if (order == "led") {
 
-    if (param == "get") {
-      bool ledStatus = digitalRead(led);
-      Serial.print("^#"); Serial.print(ledStatus); Serial.println("$!");
-    } else {
-      digitalWrite(led, ! digitalRead(led));
-    }
+// 处理esp8266发送的指令 并且通过串口返回相应数据
+void runFunction(String order, String param) {
+  if (order == "relay") {
+
+    // relay status change
+    digitalWrite(relay, !digitalRead(relay));
+
+    // return message
+    bool relayStatus = digitalRead(relay);
+    relayStatus ? Serial.print("^msg#success$!") : Serial.print("^msg#failed$!");
+    Serial.print("^status#"); Serial.print(relayStatus); Serial.print("$!");
+    
 
   } else if (order == "dht") {
     
@@ -196,20 +171,46 @@ void runFunction(String order, String param) {
 
   } else if (order == "all") {
     
-    bool ledStatus = digitalRead(led);
-    Serial.print("^led#");          Serial.print(ledStatus);    Serial.println("$");
+    bool relayStatus = digitalRead(relay);
+    Serial.print("^relay#");          Serial.print(relayStatus);    Serial.println("$");
     Serial.print("^temperature#");  Serial.print(temperature);  Serial.println("$");
     Serial.print("^humidity#");     Serial.print(humidity);     Serial.println("$!");
 
   } else {
     
-    Serial.print("^ERR#"); Serial.print(order); Serial.println("$!");  
+    Serial.print("^msg#ERROR$!^info#"); Serial.print(order); Serial.println("$!");  
   
   }
 }
-void loop() {
-  if (dht11.read(&temperature, &humidity, NULL) != 0){
-    refreshled();
+
+
+
+
+
+void setup() {
+  pinMode(relay, OUTPUT);
+  
+  Serial.begin(9600);
+  
+  int devices=lc.getDeviceCount();
+  for(int address=0;address<devices;address++) {
+    /*The MAX72XX is in power-saving mode on startup*/
+    lc.shutdown(address,false);
+    /* 数码管亮度调至最低，防止功率过高开发板过热，亮度过高会有安全隐患 */
+    /* 注意：实测亮度调至15，数码管全亮时，滤波电容温度会高于100度 */
+    lc.setIntensity(address,1);
+    /* and clear the display */
+    lc.clearDisplay(address);
   }
+
+}
+
+
+
+
+void loop() {
+  if(dht11.read(&temperature, &humidity, NULL) != 0) {
+    refreshled();
+  } 
   interruptRequest();
 }

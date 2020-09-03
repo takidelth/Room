@@ -19,47 +19,6 @@ IPAddress subnet(255, 255, 255, 0);
     ^Order#parameter$
 */
 
-void setup() {
-  // put your setup code here, to run once:
-  pinMode(interruptPin, OUTPUT);
-
-  Serial.begin(9600);
-
-  wifiMulti.addAP("Xiaomi_782C", "wanghai1015");    // add wifi
-  WiFi.config(local_IP, gateway, subnet);   // set WiFi 
-
-  // wifi connection test
-  Serial.print("Connecting");
-  while (wifiMulti.run() != WL_CONNECTED) {
-    delay(500);
-    Serial.print('.');
-    Serial.println("");
-  }
-  // output base info
-  Serial.print("Connected to"); Serial.println(WiFi.SSID());
-  Serial.print("IP address: "); Serial.println(WiFi.localIP());
-
-  // start flash system
-  if (SPIFFS.begin()) {
-    Serial.println("SPIFFS Started.");
-  } else {
-    Serial.println("SPIFFS Failed to Start");
-  }
-
-
-
-  // web server program run start
-  server.onNotFound(handleUserRequest);
-  server.on("/info", allInfoJson);
-  server.begin();
-  
-
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-  server.handleClient();
-}
 
 // page not found callback this function
 void handleUserRequest() {
@@ -110,10 +69,16 @@ void allInfoJson() {
   digitalWrite(interruptPin, HIGH);
 
   // send command
-  String command = "^all#$";
-  Serial.println(command);
+  Serial.println("^all#$");
 
 
+  server.send(200, "application/json", returnDataToJsonString());
+}
+
+
+// 将串口即将返回的数据转 json 字符串
+String returnDataToJsonString() {
+  
   char comData[43] = "", order[21], param[21];
   char temp, *flag = NULL;
   String jsonData = "{ ";
@@ -150,5 +115,57 @@ void allInfoJson() {
   jsonData += "}";
   
   jsonData[jsonData.length() - 2] = ' ';
-  server.send(200, "application/json", jsonData);
+  return jsonData;
+}
+
+
+void relay_control() {
+  Serial.print("^relay#$!");
+  server.send(200, "application/json", returnDataToJsonString());
+}
+
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(interruptPin, OUTPUT);
+
+  Serial.begin(9600);
+
+  wifiMulti.addAP("Xiaomi_782C", "wanghai1015");    // add wifi
+  WiFi.config(local_IP, gateway, subnet);   // set WiFi 
+
+  // wifi connection test
+  Serial.print("Connecting");
+  while (wifiMulti.run() != WL_CONNECTED) {
+    delay(500);
+    Serial.print('.');
+    Serial.println("");
+  }
+  // output base info
+  Serial.print("Connected to"); Serial.println(WiFi.SSID());
+  Serial.print("IP address: "); Serial.println(WiFi.localIP());
+
+  // start flash system
+  if (SPIFFS.begin()) {
+    Serial.println("SPIFFS Started.");
+  } else {
+    Serial.println("SPIFFS Failed to Start");
+  }
+
+
+
+  // web server program run start
+  server.onNotFound(handleUserRequest);
+  server.on("/info", allInfoJson);
+  server.on("/relay_control", relay_control);
+  server.begin();
+  
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  server.handleClient();
 }

@@ -18,6 +18,23 @@ function showDateTime(){
     s = formatTwoDigits(s); //格式化秒钟后,如果不足两位在前面补0
     //显示时间
     document.getElementById("msg").innerHTML=(h+":"+m+":"+s+"<br/>");
+    
+    // 刷新 温度字体
+    var temperTag = document.getElementById("temperature")
+    var temperature = Number(temperTag.innerText);
+    if (temperature <= 0) {
+        temperTag.setAttribute("style", "color: rgb(38, 59, 116);");
+    } else if (temperature > 0 && temperature <= 15) {
+        temperTag.setAttribute("style", "color: rgb(30, 159, 210);");
+    } else if (temperature > 15 && temperature <= 26) {
+        temperTag.setAttribute("style", "color: rgb(30, 201, 87);");
+    } else if (temperature > 26 && temperature <= 30) {
+        temperTag.setAttribute("style", "color: rgb(201, 198, 30);");
+    } else if (temperature > 30 && temperature <= 40) {
+        temperTag.setAttribute("style", "color: rgb(221, 60, 11);");
+    } else {
+        temperTag.setAttribute("style", "color: red;");
+    }
     setTimeout("showDateTime()",1000);//每秒执行一次showDateTime函数
 }
 window.onload=showDateTime;//在整个页面加载完成后执行此函数

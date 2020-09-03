@@ -8,18 +8,33 @@
                 display: inline;
                 font-size: 30px;
                 background-color: aquamarine;
+                position: fixed;
+                top: -30px;
+                left: 0;
             }
             #date {
                 display: none;
             }
         </style>
-        
-        <script type="text/javascript" src="clock.js">
+        <!-- 引用css 和 js 文件 -->
+        <link href="main.css" type="text/css" rel="stylesheet" />
+        <script type="text/javascript" src="./js/clock.js"></script>
+        <script type="text/javascript" src="./js/function.js"></script>
 
-        </script>
     </head>
     <body>
-        <>
+        <div class="content">
+            <div class="menu">
+                <a href="javascript:void(0);" onclick="LightImageChange()">
+                    <img src="./static/on.png" width="50" height="50" id="light">
+                </a>
+                <a>温度<br><span id="temperature">30</span>°C</a>
+                <a>湿度<br><span id="humidity">72</span></a>
+            </div>
+            <!-- <div class="menu">
+
+            </div> -->
+        </div>
         <h1 id="date"></h1>
         <p id="msg"></p>
     </body>
