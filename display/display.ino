@@ -190,7 +190,7 @@ void runFunction(String order, String param) {
 void setup() {
   pinMode(relay, OUTPUT);
   
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   int devices=lc.getDeviceCount();
   for(int address=0;address<devices;address++) {

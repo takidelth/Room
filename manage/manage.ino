@@ -2,21 +2,30 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
 #include <FS.h>
-
 #include <string.h>
+
+
 
 ESP8266WiFiMulti wifiMulti;
 ESP8266WebServer server(80);
+
+
 
 IPAddress local_IP(192, 168, 31, 116);
 IPAddress gateway(192, 168, 31, 0);
 IPAddress subnet(255, 255, 255, 0);
 
+
+
 // 中断允许标志位
 #define interruptPin D3
 /*
   串口通信约定格式:
-    ^Order#parameter$
+    ^Key#Word$  一组数据
+    !         为单次通信结束标记
+
+    例:
+        ^relay#abcd$  ^asdas#assdfs$ !
 */
 
 
@@ -27,6 +36,32 @@ void handleUserRequest() {
 
   if (! handleFileRead(reqResource)) {
     server.send(404, "text/plain", "404 Not Found!!");
+  }
+}
+
+void allInfoJson() {
+
+  // D3 set HIGH
+  digitalWrite(interruptPin, HIGH);
+
+  // send command
+  Serial.println("^all#$");
+
+
+  server.send(200, "application/json", returnDataToJsonString());
+  // clear
+  while (Serial.available() > 0) {
+    Serial.read();
+  }
+}
+
+void relay_control() {
+  Serial.print("^relay#$!");
+  server.send(200, "application/json", returnDataToJsonString());
+
+  // clear
+  while (Serial.available() > 0) {
+    Serial.read();
   }
 }
 
@@ -63,66 +98,60 @@ String getContentType(String filename) {
 }
 
 
-void allInfoJson() {
-
-  // D3 set HIGH
-  digitalWrite(interruptPin, HIGH);
-
-  // send command
-  Serial.println("^all#$");
 
 
-  server.send(200, "application/json", returnDataToJsonString());
+
+
+
+/********************   json   ********************
+ *****************************************************/
+String comData;
+char temp, flag;
+bool serToString(String& Key, String& Word) {
+		
+	while (Serial.available() > 0) {
+			
+		temp = (char)Serial.read();
+		
+		if (temp == '^');
+		if (temp == '$') {
+			flag = comData.indexOf("#");
+			Key = comData.substring(1, (int)flag);
+			Word = comData.substring((int)flag+1);
+			comData = "";
+			return false;
+		}
+			
+		if (temp == '!') {
+			return true;
+		}
+			
+		comData += temp;
+		
+	}
+	
+
 }
 
-
+String jsonData, k, w;
 // 将串口即将返回的数据转 json 字符串
 String returnDataToJsonString() {
-  
-  char comData[43] = "", order[21], param[21];
-  char temp, *flag = NULL;
-  String jsonData = "{ ";
-
-  // read LED Status
-  delay(50);
-  while (Serial.available() > 0) {
-    temp = Serial.read();
-    // start read
-    if (temp == '^') {
-      comData[0] = temp;
-      
-      for (int i=1; Serial.available() > 0 && i <= 42; i++) {
-        comData[i] = Serial.read();
-        
-        if (comData[i] == '$') {
-          comData[i] = '\0';
-          break;
-        }
-        
-        if (comData[i] == '#') {
-          comData[i] = '\0';
-          flag = &comData[i+1];
-        } 
-
-      }
-      // Save one
-      strcpy(order, &comData[1]);
-      strcpy(param, flag);
-      jsonData += "\"" + String(order) + "\": \"" + String(param) + "\",";
-    }
+  jsonData = "";
+  delay(5);   // 115200频率下 每秒大约传输74字节数据
+  if (Serial.available() > 0) {
     
+    while (! serToString(k, w)) {
+      jsonData += "\"" + k + "\":\"" + w + "\","; 
+    }
+    jsonData[jsonData.length() - 1] = ' ';
+    jsonData = "{ " + jsonData + "}";
+
+    return jsonData;
   }
-  jsonData += "}";
-  
-  jsonData[jsonData.length() - 2] = ' ';
-  return jsonData;
 }
+/****************************************************
+ *****************************************************/
 
-
-void relay_control() {
-  Serial.print("^relay#$!");
-  server.send(200, "application/json", returnDataToJsonString());
-}
 
 
 
@@ -131,7 +160,7 @@ void setup() {
   // put your setup code here, to run once:
   pinMode(interruptPin, OUTPUT);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   wifiMulti.addAP("Xiaomi_782C", "wanghai1015");    // add wifi
   WiFi.config(local_IP, gateway, subnet);   // set WiFi 
@@ -141,8 +170,8 @@ void setup() {
   while (wifiMulti.run() != WL_CONNECTED) {
     delay(500);
     Serial.print('.');
-    Serial.println("");
   }
+  Serial.println();
   // output base info
   Serial.print("Connected to"); Serial.println(WiFi.SSID());
   Serial.print("IP address: "); Serial.println(WiFi.localIP());
