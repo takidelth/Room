@@ -108,51 +108,43 @@ void refreshled()
 // }
 
 
-void interruptRequest() {
 
-  char comData[43] = "";    // 保存串口数据
-  char param[20] = "";
-  char order[20] = "";
-  char temp, *flag;
+String comData, command, param;
+char temp;
 
-  // Save data
-  delay(30);
+void DataReqeust() {
+  // 等待串口数据接收
+  delay(5);
   while (Serial.available() > 0) {
-      
-    temp = Serial.read();
-    // start for '^'
-    if (temp == '^') {
-      // data save to comData
-      for (int i=1; Serial.available() > 0 && i <= 42; i++) {
+  
+    temp = Serial.read();    
+  
+    if (temp == '^') continue; // 无视开头标记 符号  '^'
+    if (temp == '#') {
         
-        comData[i] = Serial.read();
-
-        if (comData[i] == '#') {
-          comData[i] = '\0';
-          flag = &comData[i+1];
-        }
-
-        if (comData[i] == '$') {
-          comData[i] = '\0';
-          break;
-        }
-
-      }
-
-      // run command
-      strcpy(order, &comData[1]);
-      strcpy(param, flag);
-      runFunction(order, param);
+        command = comData;
+        comData = "";
+        continue;
     
     }
-  
+    // 读取到结束标记 开始执行
+    if (temp == '$') {
+
+      param = comData;
+      comData = "";
+      Execute(command, param);
+
+    }
+
+    comData +=  temp;
+
   }
-    
+
 }
 
 
 // 处理esp8266发送的指令 并且通过串口返回相应数据
-void runFunction(String order, String param) {
+void Execute(String order, String param) {
   if (order == "relay") {
 
     // relay status change
@@ -187,6 +179,8 @@ void runFunction(String order, String param) {
 
 
 
+
+
 void setup() {
   pinMode(relay, OUTPUT);
   
@@ -206,11 +200,13 @@ void setup() {
 }
 
 
-
-
 void loop() {
   if(dht11.read(&temperature, &humidity, NULL) != 0) {
     refreshled();
   } 
-  interruptRequest();
+
+
+  if (Serial.available() > 0) {
+    DataReqeust();
+  }
 }
