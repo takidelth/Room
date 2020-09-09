@@ -111,12 +111,12 @@ bool serToString(String& Key, String& Word) {
 		
 	while (Serial.available() > 0) {
 			
-		temp = (char)Serial.read();
+		temp = Serial.read();
 		
-		if (temp == '^');
+		if (temp == '^') continue;
 		if (temp == '$') {
 			flag = comData.indexOf("#");
-			Key = comData.substring(1, (int)flag);
+			Key = comData.substring(0, (int)flag);
 			Word = comData.substring((int)flag+1);
 			comData = "";
 			return false;
