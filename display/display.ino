@@ -119,7 +119,7 @@ void DataReqeust() {
   
     temp = Serial.read();    
   
-    if (temp == '^') continue; // 无视开头标记 符号  '^'
+    if (temp == '^' || temp == ' ') continue; // 无视开头标记 符号  '^'
     if (temp == '#') {
         
         command = comData;
@@ -133,13 +133,18 @@ void DataReqeust() {
       param = comData;
       comData = "";
       Execute(command, param);
-
+      continue;
     }
 
     comData +=  temp;
 
   }
 
+//  // clear cache
+//  while ( Serial.available() > 0) {
+//    Serial.read();  
+//  }
+  comData = "";
 }
 
 
@@ -152,7 +157,6 @@ void Execute(String order, String param) {
 
     // return message
     bool relayStatus = digitalRead(relay);
-    relayStatus ? Serial.print("^msg#success$!") : Serial.print("^msg#failed$!");
     Serial.print("^status#"); Serial.print(relayStatus); Serial.print("$!");
     
 
@@ -170,7 +174,7 @@ void Execute(String order, String param) {
 
   } else {
     
-    Serial.print("^msg#ERROR$!^info#"); Serial.print(order); Serial.println("$!");  
+    Serial.print("^msg#ERROR$^info#"); Serial.print(order); Serial.println("$!");  
   
   }
 }

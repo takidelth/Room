@@ -113,7 +113,7 @@ bool serToString(String& Key, String& Word) {
 			
 		temp = Serial.read();
 		
-		if (temp == '^') continue;
+		if (temp == '^' || temp == ' ') continue;
 		if (temp == '$') {
 			flag = comData.indexOf("#");
 			Key = comData.substring(0, (int)flag);
