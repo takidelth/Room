@@ -42,13 +42,13 @@ void handleUserRequest() {
 void allInfoJson() {
 
   // D3 set HIGH
-  digitalWrite(interruptPin, HIGH);
+//  digitalWrite(interruptPin, HIGH);
 
   // send command
   Serial.println("^all#$");
 
 
-  server.send(200, "application/json", returnDataToJsonString());
+  server.send(200, "application/javascript", "var allInfo = " + returnDataToJsonString());
   // clear
   while (Serial.available() > 0) {
     Serial.read();
@@ -57,7 +57,7 @@ void allInfoJson() {
 
 void relay_control() {
   Serial.print("^relay#$!");
-  server.send(200, "application/json", returnDataToJsonString());
+  server.send(200, "application/javascript", returnDataToJsonString());
 
   // clear
   while (Serial.available() > 0) {
@@ -148,6 +148,7 @@ String returnDataToJsonString() {
 
     return jsonData;
   }
+  return "{}";
 }
 /****************************************************
  *****************************************************/
@@ -158,7 +159,7 @@ String returnDataToJsonString() {
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(interruptPin, OUTPUT);
+//  pinMode(interruptPin, OUTPUT);
 
   Serial.begin(115200);
 
@@ -187,7 +188,7 @@ void setup() {
 
   // web server program run start
   server.onNotFound(handleUserRequest);
-  server.on("/info", allInfoJson);
+  server.on("/info.js", allInfoJson);
   server.on("/relay_control", relay_control);
   server.begin();
   

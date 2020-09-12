@@ -6,19 +6,26 @@ function LightImageChange() {
         tag.setAttribute('src', './static/on.png');
     }
     var httpRequest = new XMLHttpRequest();
-    httpRequest.open('GET', './relay_control', false);
-    httpRequest.send(true);
+    httpRequest.open('GET', './relay_control', true);
+    httpRequest.send();
 }
 
 
 function RefreshData() {
     var httpRequest = new XMLHttpRequest();
-    httpRequest.open('GET', './info', false);
-    httpRequest.send(true);
-    console.log(httpRequest.status);
+    httpRequest.open('GET', './info.js', false);
+    httpRequest.send();
+    // console.log(httpRequest.status);
 
     if (httpRequest.status == 200) {
-        var json = JSON.parse(httpRequest.responseText);
+        // var json = JSON.parse(httpRequest.responseText);
+        if (httpRequest.responseText.substring(5, 12) != "allInfo") {
+            return;
+        }
+        var info = document.getElementsById('allInfo');
+        info.innerText = httpRequest.responseText;
+        console.log(allInfo);
+        var json = allInfo;
         if (json['msg'] != 'ERROR') {
             var relayStatusTag = document.getElementById('light');
             var temperTag = document.getElementById('temperature');
