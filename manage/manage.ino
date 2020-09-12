@@ -48,7 +48,7 @@ void allInfoJson() {
   Serial.println("^all#$");
 
 
-  server.send(200, "application/javascript", returnDataToJsonString());
+  server.send(200, "application/json", returnDataToJsonString());
   // clear
   while (Serial.available() > 0) {
     Serial.read();
@@ -57,7 +57,7 @@ void allInfoJson() {
 
 void relay_control() {
   Serial.print("^relay#$!");
-  server.send(200, "application/javascript", returnDataToJsonString());
+  server.send(200, "application/json", returnDataToJsonString());
 
   // clear
   while (Serial.available() > 0) {
