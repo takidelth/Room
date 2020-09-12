@@ -1,13 +1,15 @@
 var allInfo = {};
 
 function LightImageChange() {
-    var tag = document.getElementById('light');
-    if (tag.getAttribute('src') == './static/on.png') {
-        tag.setAttribute('src', './static/off.png');
+    var light_on = document.getElementById('light_on');
+    var light_off = document.getElementById('light_off');
+    if (light_off.getAttribute('style') == "display: none;") {
+        light_off.setAttribute('style', 'display: block;');
+        light_on.setAttribute('style', 'display: none'); 
     } else {
-        tag.setAttribute('src', './static/on.png');
+        light_on.setAttribute('style', 'display: block;');
+        light_off.setAttribute('style', 'display: none'); 
     }
-    var httpRequest = new XMLHttpRequest();
     httpRequest.open('GET', './relay_control', true);
     httpRequest.send();
 }
