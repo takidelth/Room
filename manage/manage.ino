@@ -188,7 +188,7 @@ void setup() {
 
   // web server program run start
   server.onNotFound(handleUserRequest);
-  server.on("/info.js", allInfoJson);
+  server.on("/info", allInfoJson);
   server.on("/relay_control", relay_control);
   server.begin();
   

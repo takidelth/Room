@@ -1,4 +1,4 @@
-var allInfo;
+var allInfo = {};
 
 function LightImageChange() {
     var tag = document.getElementById('light');
@@ -51,7 +51,7 @@ function showDateTime(){
     
 
     // 刷新页面信息
-    if (allInfo['msg'] != 'ERROR') {
+    if (allInfo['msg'] != 'ERROR' && allInfo["msg"] != undefined) {
         var temperTag = document.getElementById('temperature');
         var humidityTag = document.getElementById('humidity');
         var light_on = document.getElementById('light_on');
@@ -66,9 +66,9 @@ function showDateTime(){
             light_off.setAttribute('style', 'display: none;');
         }
         if (allInfo['temperature'] != undefined)
-            temperTag.innerText = json['temperature'];
+            temperTag.innerText = allInfo['temperature'];
         if (allInfo['humidity'] != undefined)
-            humidityTag.innerText = json['humidity'];
+            humidityTag.innerText = allInfo['humidity'];
         // console.log('logloglog');
     }
     // 刷新 温度字体
