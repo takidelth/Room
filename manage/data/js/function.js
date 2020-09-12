@@ -1,3 +1,5 @@
+var allInfo;
+
 function LightImageChange() {
     var tag = document.getElementById('light');
     if (tag.getAttribute('src') == './static/on.png') {
@@ -13,40 +15,21 @@ function LightImageChange() {
 
 function RefreshData() {
     var httpRequest = new XMLHttpRequest();
-    httpRequest.open('GET', './info.js', false);
+    httpRequest.open('GET', './info', false);
     httpRequest.send();
     // console.log(httpRequest.status);
 
     if (httpRequest.status == 200) {
-        // var json = JSON.parse(httpRequest.responseText);
-        if (httpRequest.responseText.substring(5, 12) != "allInfo") {
-            return;
+        var json = JSON.parse(httpRequest.responseText);
+        if (json["msg"] == undefined) {
+            return ;
         }
-        var info = document.getElementsById('allInfo');
-        info.innerText = httpRequest.responseText;
-        console.log(allInfo);
-        var json = allInfo;
-        if (json['msg'] != 'ERROR') {
-            var relayStatusTag = document.getElementById('light');
-            var temperTag = document.getElementById('temperature');
-            var humidityTag = document.getElementById('humidity');
-
-            if (json['relay'] == '0' && relayStatusTag.getAttribute('src') != './static/off.png') {
-                relayStatusTag.setAttribute('src', './static/off.png');
-            } else if (json['relay'] == '1' && relayStatusTag.getAttribute('src') != './static/on.png') {
-                relayStatusTag.setAttribute('src', './static/on.png');
-            }
-            if (json['temperature'] != undefined)
-                temperTag.innerText = json['temperature'];
-            if (json['humidity'] != undefined)
-                humidityTag.innerText = json['humidity'];
-            // console.log('logloglog');
-        }
+        allInfo = json;
     }
 }
 
 /**
- *  动态显示当前时间
+ *  动态显示当前时间 温度字体颜色 开关灯图标 等信息
  */
 function showDateTime(){
     var sWeek=new Array("日","一","二","三","四","五","六");  //声明数组存储一周七天
@@ -66,6 +49,28 @@ function showDateTime(){
     //显示时间
     document.getElementById("msg").innerHTML=(h+":"+m+":"+s+"<br/>");
     
+
+    // 刷新页面信息
+    if (allInfo['msg'] != 'ERROR') {
+        var temperTag = document.getElementById('temperature');
+        var humidityTag = document.getElementById('humidity');
+        var light_on = document.getElementById('light_on');
+        var light_off = document.getElementById('light_off');
+
+
+        if (allInfo['relay'] == '0') {
+            light_off.setAttribute('style', 'display: block;');
+            light_on.setAttribute('style', 'display: none;');
+        } else {
+            light_on.setAttribute('style', 'display: block;');
+            light_off.setAttribute('style', 'display: none;');
+        }
+        if (allInfo['temperature'] != undefined)
+            temperTag.innerText = json['temperature'];
+        if (allInfo['humidity'] != undefined)
+            humidityTag.innerText = json['humidity'];
+        // console.log('logloglog');
+    }
     // 刷新 温度字体
     var temperTag = document.getElementById("temperature")
     var temperature = Number(temperTag.innerText);
@@ -96,4 +101,4 @@ window.onload=function() {
     showDateTime();
     RefreshData();
 };
-setInterval("RefreshData()", 5000);
+setInterval("RefreshData()", 7000);

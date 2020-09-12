@@ -48,7 +48,7 @@ void allInfoJson() {
   Serial.println("^all#$");
 
 
-  server.send(200, "application/javascript", "var allInfo = " + returnDataToJsonString());
+  server.send(200, "application/javascript", returnDataToJsonString());
   // clear
   while (Serial.available() > 0) {
     Serial.read();

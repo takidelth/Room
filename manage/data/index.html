@@ -20,14 +20,15 @@
         <link href="main.css" type="text/css" rel="stylesheet" />
         <!-- <script type="text/javascript" src="./js/clock.js"></script> -->
         <script type="text/javascript" src="./js/function.js"></script>
-        <script id="allInfo"></script>
+        <!-- <script id="allInfo"></script> -->
 
     </head>
     <body>
         <div class="content">
             <div class="menu">
                 <a href="javascript:void(0);" onclick="LightImageChange()">
-                    <img src="./static/on.png" width="50" height="50" id="light">
+                    <img src="./static/on.png" width="50" height="50" id="light_on" style="display: none;">
+                    <img src="./static/off.png" width="50" height="50" id="light_off" style="display: block">
                 </a>
                 <a>温度<br><span id="temperature">30</span>°C</a>
                 <a>湿度<br><span id="humidity">72</span></a>
