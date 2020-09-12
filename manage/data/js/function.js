@@ -5,11 +5,12 @@ function LightImageChange() {
     var light_off = document.getElementById('light_off');
     if (light_off.getAttribute('style') == "display: none;") {
         light_off.setAttribute('style', 'display: block;');
-        light_on.setAttribute('style', 'display: none'); 
+        light_on.setAttribute('style', 'display: none;'); 
     } else {
         light_on.setAttribute('style', 'display: block;');
-        light_off.setAttribute('style', 'display: none'); 
+        light_off.setAttribute('style', 'display: none;'); 
     }
+    var httpRequest = new XMLHttpRequest();
     httpRequest.open('GET', './relay_control', true);
     httpRequest.send();
 }
